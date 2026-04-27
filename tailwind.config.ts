@@ -75,14 +75,15 @@ const config: Config = {
         "xl": "32px"
       },
       fontFamily: {
-        "display": ["Inter", "sans-serif"],
-        "h1": ["Inter", "sans-serif"],
+        "display": ["var(--font-jakarta)", "sans-serif"],
+        "h1": ["var(--font-jakarta)", "sans-serif"],
         "code": ["monospace"],
-        "label": ["Inter", "sans-serif"],
-        "body-sm": ["Inter", "sans-serif"],
-        "h2": ["Inter", "sans-serif"],
-        "h3": ["Inter", "sans-serif"],
-        "body-lg": ["Inter", "sans-serif"]
+        "label": ["var(--font-jakarta)", "sans-serif"],
+        "body-sm": ["var(--font-jakarta)", "sans-serif"],
+        "h2": ["var(--font-jakarta)", "sans-serif"],
+        "h3": ["var(--font-jakarta)", "sans-serif"],
+        "body-lg": ["var(--font-jakarta)", "sans-serif"],
+        "jakarta": ["var(--font-jakarta)", "sans-serif"]
       },
       fontSize: {
         "display": ["36px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600" }],
