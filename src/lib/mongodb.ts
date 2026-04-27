@@ -10,11 +10,18 @@ const options = {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
-  }
+  },
+  connectTimeoutMS: 10000,
+  socketTimeoutMS: 45000,
 };
 
 let client: MongoClient;
 let clientPromise: Promise<MongoClient>;
+
+function createClientPromise() {
+  client = new MongoClient(uri, options);
+  return client.connect();
+}
 
 if (process.env.NODE_ENV === 'development') {
   let globalWithMongo = global as typeof globalThis & {
@@ -22,16 +29,24 @@ if (process.env.NODE_ENV === 'development') {
   };
 
   if (!globalWithMongo._mongoClientPromise) {
-    client = new MongoClient(uri, options);
-    globalWithMongo._mongoClientPromise = client.connect().catch(err => {
-      console.error('Failed to connect to MongoDB', err);
-      throw err;
-    });
+    globalWithMongo._mongoClientPromise = createClientPromise();
   }
   clientPromise = globalWithMongo._mongoClientPromise;
 } else {
-  client = new MongoClient(uri, options);
-  clientPromise = client.connect();
+  clientPromise = createClientPromise();
 }
 
 export default clientPromise;
+
+export async function getDb() {
+  try {
+    const client = await clientPromise;
+    return client.db('technicalRadar');
+  } catch (e) {
+    console.error('Initial MongoDB connection failed, retrying once...', e);
+    // If initial connection failed, try to create a new one
+    const newClient = new MongoClient(uri, options);
+    const connectedClient = await newClient.connect();
+    return connectedClient.db('technicalRadar');
+  }
+}

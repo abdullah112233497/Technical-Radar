@@ -216,7 +216,8 @@ export default function Home() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ delay: idx * 0.05 }}
-                    className="p-8 border-b border-slate-50 hover:bg-slate-50/80 transition-all duration-300 flex gap-6 group"
+                    onClick={() => item.url && window.open(item.url, '_blank')}
+                    className={`p-8 border-b border-slate-50 hover:bg-slate-50/80 transition-all duration-300 flex gap-6 group ${item.url ? 'cursor-pointer' : ''}`}
                   >
                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform ${
                       item.color === 'rose' ? 'bg-rose-50 text-rose-500' :

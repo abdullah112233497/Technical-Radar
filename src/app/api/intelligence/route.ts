@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
+import { getDb } from '@/lib/mongodb';
 import Groq from 'groq-sdk';
 
 const groq = new Groq({
@@ -20,7 +20,7 @@ async function fetchHN() {
         } catch { return null; }
       })
     );
-    return stories.filter(s => s && s.title).map(s => s.title).join('\n');
+    return stories.filter(s => s && s.title).map(s => `Title: ${s.title}, URL: ${s.url || 'https://news.ycombinator.com/item?id=' + s.id}`).join('\n');
   } catch (e) {
     console.error('HN fetch failed', e);
     return '';
@@ -30,7 +30,7 @@ async function fetchHN() {
 async function fetchGitHub(stackItems: string[]) {
   try {
     const updates = await Promise.all(
-      stackItems.slice(0, 3).map(async (item) => { // Limit to 3 items to avoid timeouts
+      stackItems.slice(0, 3).map(async (item) => {
         try {
           const res = await fetch(`https://api.github.com/search/repositories?q=${item}&sort=updated&order=desc&per_page=2`, {
             headers: { 'User-Agent': 'Technical-Radar-App' },
@@ -38,7 +38,7 @@ async function fetchGitHub(stackItems: string[]) {
           });
           if (!res.ok) return '';
           const data = await res.json();
-          return data.items?.map((repo: any) => `${item}: ${repo.full_name} - ${repo.description}`).join('\n') || '';
+          return data.items?.map((repo: any) => `${item}: ${repo.full_name} - ${repo.description}, URL: ${repo.html_url}`).join('\n') || '';
         } catch { return ''; }
       })
     );
@@ -54,8 +54,7 @@ export async function GET() {
     let stackItems = ['MongoDB', 'PostgreSQL', 'Next.js', 'React', 'Tailwind CSS'];
     
     try {
-      const client = await clientPromise;
-      const db = client.db('technicalRadar');
+      const db = await getDb();
       const userStack = await db.collection('userStack').findOne({ id: 'current_user' });
       if (userStack?.items?.length) {
         stackItems = userStack.items;
@@ -80,10 +79,11 @@ export async function GET() {
       
       Provide the analysis in the following JSON format:
       {
-        "risks": [{"title": "...", "desc": "...", "time": "...", "icon": "...", "color": "rose", "category": "risks"}],
-        "opportunities": [{"title": "...", "desc": "...", "time": "...", "icon": "...", "color": "emerald", "category": "opportunities"}],
-        "info": [{"title": "...", "desc": "...", "time": "...", "icon": "...", "color": "slate", "category": "info"}]
+        "risks": [{"title": "...", "desc": "...", "time": "...", "url": "...", "icon": "...", "color": "rose", "category": "risks"}],
+        "opportunities": [{"title": "...", "desc": "...", "time": "...", "url": "...", "icon": "...", "color": "emerald", "category": "opportunities"}],
+        "info": [{"title": "...", "desc": "...", "time": "...", "url": "...", "icon": "...", "color": "slate", "category": "info"}]
       }
+      For the "url" field, use the most relevant URL provided in the source data (Hacker News or GitHub). If no specific URL is relevant, use a reputable documentation link for the technology.
       Limit to 2-3 items per category. Use meaningful Material Symbols names for icons. Ensure colors are strictly as specified.
     `;
 

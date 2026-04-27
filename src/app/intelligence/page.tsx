@@ -132,7 +132,8 @@ export default function IntelligenceHub() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.1 }}
-                      className="bg-white border border-slate-200/60 rounded-[2.5rem] p-8 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 relative group overflow-hidden"
+                      onClick={() => item.url && window.open(item.url, '_blank')}
+                      className={`bg-white border border-slate-200/60 rounded-[2.5rem] p-8 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 relative group overflow-hidden ${item.url ? 'cursor-pointer' : ''}`}
                     >
                       {/* Subtle hover background gradient */}
                       <div className={`absolute top-0 right-0 w-32 h-32 ${section.bg} rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
@@ -166,11 +167,14 @@ export default function IntelligenceHub() {
                           <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Asset Category</span>
                           <span className="text-xs font-black text-slate-900 tracking-tight">{item.category}</span>
                         </div>
-                        <button className={`px-6 py-3 rounded-xl text-xs font-black transition-all duration-300 shadow-lg btn-premium ${
-                          section.id === 'risks' ? 'bg-rose-500 text-white shadow-rose-500/20 hover:bg-rose-600' :
-                          section.id === 'opportunities' ? 'bg-emerald-500 text-white shadow-emerald-500/20 hover:bg-emerald-600' :
-                          'bg-slate-900 text-white shadow-slate-900/20 hover:bg-slate-800'
-                        }`}>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); item.url && window.open(item.url, '_blank'); }}
+                          className={`px-6 py-3 rounded-xl text-xs font-black transition-all duration-300 shadow-lg btn-premium ${
+                            section.id === 'risks' ? 'bg-rose-500 text-white shadow-rose-500/20 hover:bg-rose-600' :
+                            section.id === 'opportunities' ? 'bg-emerald-500 text-white shadow-emerald-500/20 hover:bg-emerald-600' :
+                            'bg-slate-900 text-white shadow-slate-900/20 hover:bg-slate-800'
+                          }`}
+                        >
                           Take Action
                         </button>
                       </div>
