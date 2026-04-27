@@ -18,7 +18,7 @@ async function fetchContext(stackItems: string[]) {
     const githubData = githubRes.ok ? await githubRes.json() : { items: [] };
 
     const hnRes = await fetch('https://hacker-news.firebaseio.com/v0/topstories.json', { signal: AbortSignal.timeout(5000) });
-    const hnIds = hnRes.ok ? await hnIds.json() : [];
+    const hnIds = hnRes.ok ? await hnRes.json() : [];
     const hnTop = hnIds.slice(0, 5);
     const hnStories = await Promise.all(
       hnTop.map(async (id: number) => {

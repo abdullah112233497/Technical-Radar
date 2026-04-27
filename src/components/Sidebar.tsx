@@ -41,8 +41,8 @@ export default function Sidebar() {
               href={link.href}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-300 group ${
                 isActive 
-                  ? 'bg-slate-900 text-white shadow-md shadow-slate-900/10 translate-x-1' 
-                  : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50 hover:translate-x-1'
+                  ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/20 translate-x-1' 
+                  : 'text-slate-500 hover:text-slate-900 hover:bg-white hover:shadow-sm hover:ring-1 hover:ring-slate-200/50 hover:translate-x-1'
               }`}
             >
               <span className={`material-symbols-outlined transition-transform duration-300 group-hover:scale-110 ${isActive ? 'fill-current' : ''}`} style={isActive ? { fontVariationSettings: "'FILL' 1" } : {}}>
@@ -63,7 +63,7 @@ export default function Sidebar() {
           <Link
             key={link.href}
             href={link.href}
-            className="flex items-center gap-3 px-4 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all duration-300 group"
+            className="flex items-center gap-3 px-4 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-white hover:shadow-sm hover:ring-1 hover:ring-slate-200/50 rounded-xl transition-all duration-300 group"
           >
             <span className="material-symbols-outlined text-[20px] group-hover:rotate-12 transition-transform">
               {link.icon}

@@ -1,6 +1,6 @@
 export default function TopNav() {
   return (
-    <header className="sticky top-0 z-40 flex items-center justify-between px-8 w-full h-16 border-b border-slate-200/50 bg-white/60 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 flex items-center justify-between px-8 w-full h-16 border-b border-slate-200/50 bg-white/80 backdrop-blur-xl">
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-2.5 text-slate-900 font-bold tracking-tight">
           <span className="material-symbols-outlined text-[20px] text-slate-400">explore</span>
@@ -25,21 +25,10 @@ export default function TopNav() {
           <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">AI Optimizer Active</span>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all duration-300">
-            <span className="material-symbols-outlined text-[20px]">notifications</span>
-          </button>
-          <button className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all duration-300">
-            <span className="material-symbols-outlined text-[20px]">settings</span>
-          </button>
-        </div>
-
-        <div className="h-8 w-px bg-slate-200 mx-1"></div>
-
-        <button className="flex items-center gap-3 pl-2 pr-1 py-1 rounded-xl hover:bg-slate-50 transition-all duration-300 group">
+        <button className="flex items-center gap-3 pl-2 pr-1 py-1 rounded-xl hover:bg-slate-100 hover:shadow-sm hover:ring-1 hover:ring-slate-200 transition-all duration-300 group">
           <div className="flex flex-col items-end">
-            <span className="text-xs font-bold text-slate-900 leading-none">Alex Rivera</span>
-            <span className="text-[10px] text-slate-400 font-medium mt-1">Lead Architect</span>
+            <span className="text-xs font-bold text-slate-900 leading-none">Sam Altman</span>
+            <span className="text-[10px] text-slate-400 font-medium mt-1">Software Engineer</span>
           </div>
           <div className="w-9 h-9 rounded-xl overflow-hidden border-2 border-white shadow-sm group-hover:scale-105 transition-transform duration-300">
             <img 
