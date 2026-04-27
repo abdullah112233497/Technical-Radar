@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import TopNav from "@/components/TopNav";
+import Providers from "@/components/Providers";
 
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
@@ -31,7 +32,9 @@ export default function RootLayout({
         <Sidebar />
         <div className="flex-1 ml-64 flex flex-col min-h-screen w-full">
           <TopNav />
-          {children}
+          <Providers>
+            {children}
+          </Providers>
         </div>
       </body>
     </html>
