@@ -1,32 +1,54 @@
 export default function TopNav() {
   return (
-    <header className="sticky top-0 z-40 flex items-center justify-between px-6 w-full h-14 border-b border-gray-200 bg-white/80 backdrop-blur-md shadow-sm">
-      <div className="flex items-center gap-4">
-        <span className="text-lg font-black tracking-tight text-slate-900">Radar</span>
-        <div className="h-4 w-px bg-gray-200 mx-2"></div>
-        <div className="flex items-center gap-2 text-slate-600">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-slate-600"></span>
-          </span>
-          <span className="font-body-sm text-body-sm font-medium">Analyzing your stack in real-time...</span>
+    <header className="sticky top-0 z-40 flex items-center justify-between px-8 w-full h-16 border-b border-slate-200/50 bg-white/60 backdrop-blur-xl">
+      <div className="flex items-center gap-6">
+        <div className="flex items-center gap-2.5 text-slate-900 font-bold tracking-tight">
+          <span className="material-symbols-outlined text-[20px] text-slate-400">explore</span>
+          <span className="text-sm">Technical Intelligence</span>
+        </div>
+        <div className="h-4 w-px bg-slate-200"></div>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span className="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Live Analysis</span>
+          </div>
+          <span className="text-xs text-slate-400 font-medium">Scanning stack dependencies...</span>
         </div>
       </div>
-      <div className="flex items-center gap-4">
-        <span className="font-body-sm text-body-sm text-outline hidden md:block">AI is analyzing...</span>
-        <button className="text-slate-500 transition-opacity duration-150 active:opacity-70 hover:text-slate-900">
-          <span className="material-symbols-outlined">bolt</span>
-        </button>
-        <button className="text-slate-500 transition-opacity duration-150 active:opacity-70 hover:text-slate-900">
-          <span className="material-symbols-outlined">settings</span>
-        </button>
-        <div className="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant">
-          <img 
-            alt="User profile" 
-            className="w-full h-full object-cover" 
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDralHMP9_CuQj6uNotRifTSKOijSlzcfCxbCulQJsBZN7J-7Bus9Sp0beCliKcAcq89bOZU1mXJLdMHt23WZAEBoHB0-Ut0rl2OD1wrmDWJ1z65Ec4CDGi9OuC6-xohZf-QBGo_JztQNtohs81zp6lQEsmM4XidwP7RFats4RGqYpiSTcKlOQmw_AOxIfy50RxNuORSMNYom6vQtEvOuEYIcCjiLjScNzoifbqwi1sFcItVgjTuj6vaMBU51YDOLfuyazYoohOewPg"
-          />
+
+      <div className="flex items-center gap-5">
+        <div className="hidden lg:flex items-center bg-slate-50 border border-slate-100 rounded-full px-4 py-1.5 gap-2">
+          <span className="material-symbols-outlined text-[16px] text-slate-400">auto_awesome</span>
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">AI Optimizer Active</span>
         </div>
+
+        <div className="flex items-center gap-2">
+          <button className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all duration-300">
+            <span className="material-symbols-outlined text-[20px]">notifications</span>
+          </button>
+          <button className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all duration-300">
+            <span className="material-symbols-outlined text-[20px]">settings</span>
+          </button>
+        </div>
+
+        <div className="h-8 w-px bg-slate-200 mx-1"></div>
+
+        <button className="flex items-center gap-3 pl-2 pr-1 py-1 rounded-xl hover:bg-slate-50 transition-all duration-300 group">
+          <div className="flex flex-col items-end">
+            <span className="text-xs font-bold text-slate-900 leading-none">Alex Rivera</span>
+            <span className="text-[10px] text-slate-400 font-medium mt-1">Lead Architect</span>
+          </div>
+          <div className="w-9 h-9 rounded-xl overflow-hidden border-2 border-white shadow-sm group-hover:scale-105 transition-transform duration-300">
+            <img 
+              alt="User profile" 
+              className="w-full h-full object-cover" 
+              src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=100&h=100"
+            />
+          </div>
+        </button>
       </div>
     </header>
   );
