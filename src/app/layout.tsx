@@ -28,9 +28,9 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="bg-background text-on-background font-body-lg text-body-lg min-h-screen antialiased flex" suppressHydrationWarning>
+      <body className="bg-background text-on-background font-body-lg text-body-lg min-h-screen antialiased" suppressHydrationWarning>
         <Sidebar />
-        <div className="flex-1 ml-64 flex flex-col min-h-screen w-full">
+        <div className="flex-1 ml-64 flex flex-col min-h-screen">
           <TopNav />
           <Providers>
             {children}

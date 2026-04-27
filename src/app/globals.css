@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-background text-on-background min-h-screen antialiased font-jakarta selection:bg-primary/10 selection:text-primary flex;
+    @apply bg-background text-on-background min-h-screen antialiased font-jakarta selection:bg-primary/10 selection:text-primary;
   }
 }
 
