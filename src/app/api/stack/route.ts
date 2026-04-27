@@ -8,8 +8,9 @@ export async function GET() {
     const stack = await db.collection('userStack').findOne({ id: 'current_user' });
     return NextResponse.json(stack || { items: [] });
   } catch (e) {
-    console.error(e);
-    return NextResponse.json({ error: 'Failed to fetch stack' }, { status: 500 });
+    console.error('Stack GET error:', e);
+    // Return empty items instead of 500 to allow UI to function
+    return NextResponse.json({ items: [], warning: 'DB connection unavailable' });
   }
 }
 
@@ -25,7 +26,7 @@ export async function POST(request: Request) {
     );
     return NextResponse.json({ message: 'Stack updated successfully' });
   } catch (e) {
-    console.error(e);
-    return NextResponse.json({ error: 'Failed to update stack' }, { status: 500 });
+    console.error('Stack POST error:', e);
+    return NextResponse.json({ error: 'Failed to update stack. Database connection issue.' }, { status: 503 });
   }
 }
