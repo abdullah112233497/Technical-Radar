@@ -1,5 +1,8 @@
+'use client';
+import { useState } from 'react';
+
 export default function StackSetupPage() {
-  const categories = [
+  const [categories, setCategories] = useState([
     {
       title: "Databases",
       icon: "database",
@@ -48,7 +51,23 @@ export default function StackSetupPage() {
         { name: "DigitalOcean App Platform", active: false },
       ]
     }
-  ];
+  ]);
+
+  const toggleItem = (categoryIndex: number, itemIndex: number) => {
+    setCategories(prev => {
+      const newCategories = [...prev];
+      const category = { ...newCategories[categoryIndex] };
+      const items = [...category.items];
+      items[itemIndex] = { ...items[itemIndex], active: !items[itemIndex].active };
+      category.items = items;
+      newCategories[categoryIndex] = category;
+      return newCategories;
+    });
+  };
+
+  const totalSelected = categories.reduce((total, cat) => 
+    total + cat.items.filter(item => item.active).length, 0
+  );
 
   return (
     <main className="flex-1 overflow-y-auto p-8 lg:p-12 max-w-[1280px] w-full mx-auto pb-32">
@@ -90,15 +109,13 @@ export default function StackSetupPage() {
               {cat.items.map((item, j) => (
                 <button 
                   key={j}
+                  onClick={() => toggleItem(i, j)}
                   className={`px-4 py-2 rounded-full border font-label text-label flex items-center gap-2 transition-all duration-200 ${
                     item.active 
                       ? 'border-slate-900 bg-slate-900 text-white shadow-sm scale-[1.02]' 
                       : 'border-outline-variant bg-surface-container-lowest text-on-surface hover:border-outline hover:bg-surface-container-low hover:scale-[1.02] active:scale-95'
                   }`}
                 >
-                  {item.active && (
-                    <span className="material-symbols-outlined text-[16px] text-slate-300">check_circle</span>
-                  )}
                   {item.name}
                 </button>
               ))}
@@ -110,7 +127,7 @@ export default function StackSetupPage() {
       {/* Fixed Action Bar at Bottom */}
       <div className="fixed bottom-0 left-64 right-0 bg-surface-container-lowest/90 backdrop-blur-md border-t border-outline-variant p-4 px-8 flex justify-end z-30">
         <div className="flex items-center gap-4 max-w-[1280px] w-full mx-auto justify-end">
-          <span className="font-label text-label text-outline hidden sm:block">4 items selected</span>
+          <span className="font-label text-label text-outline hidden sm:block">{totalSelected} items selected</span>
           <button className="font-label text-label font-medium bg-slate-900 text-white px-8 py-3 rounded-lg shadow-md hover:bg-slate-800 transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-2">
             <span className="material-symbols-outlined text-[18px]">save</span>
             Save Stack
@@ -120,3 +137,4 @@ export default function StackSetupPage() {
     </main>
   );
 }
+

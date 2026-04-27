@@ -20,15 +20,15 @@ export default function Sidebar() {
   return (
     <nav className="fixed left-0 top-0 bottom-0 flex flex-col p-4 h-screen w-64 border-r border-gray-200 bg-white z-50">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-8 px-2">
+      <Link href="/" className="flex items-center gap-3 mb-8 px-2 hover:opacity-80 transition-opacity">
         <div className="w-8 h-8 rounded bg-primary flex items-center justify-center text-on-primary">
           <span className="material-symbols-outlined text-[20px]">radar</span>
         </div>
         <div>
-          <h1 className="text-base font-bold tracking-tighter text-slate-900">Founder Radar</h1>
+          <h1 className="text-base font-bold tracking-tighter text-slate-900">Technical Radar</h1>
           <p className="font-label text-label text-outline">V1.0.4-beta</p>
         </div>
-      </div>
+      </Link>
 
       {/* Navigation Links */}
       <div className="flex flex-col gap-1 flex-1">
