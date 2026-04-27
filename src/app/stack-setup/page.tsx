@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 export default function StackSetupPage() {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const [categories, setCategories] = useState([
     {
       title: "Databases",
@@ -79,15 +80,19 @@ export default function StackSetupPage() {
   }, []);
 
   const toggleItem = (categoryIndex: number, itemIndex: number) => {
-    setCategories(prev => {
-      const newCategories = [...prev];
-      const category = { ...newCategories[categoryIndex] };
-      const items = [...category.items];
-      items[itemIndex] = { ...items[itemIndex], active: !items[itemIndex].active };
-      category.items = items;
-      newCategories[categoryIndex] = category;
-      return newCategories;
-    });
+    // Find the real index in the original categories array if filtered
+    const catTitle = filteredCategories[categoryIndex].title;
+    const itemName = filteredCategories[categoryIndex].items[itemIndex].name;
+    
+    setCategories(prev => prev.map(cat => {
+      if (cat.title === catTitle) {
+        return {
+          ...cat,
+          items: cat.items.map(it => it.name === itemName ? { ...it, active: !it.active } : it)
+        };
+      }
+      return cat;
+    }));
   };
 
   const handleSave = async () => {
@@ -110,6 +115,11 @@ export default function StackSetupPage() {
   const totalSelected = categories.reduce((total, cat) => 
     total + cat.items.filter(item => item.active).length, 0
   );
+
+  const filteredCategories = categories.map(cat => ({
+    ...cat,
+    items: cat.items.filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()))
+  })).filter(cat => cat.items.length > 0);
 
   return (
     <main className="flex-1 overflow-y-auto p-8 lg:p-12 max-w-[1280px] w-full mx-auto pb-20">
@@ -141,14 +151,16 @@ export default function StackSetupPage() {
           className="w-full bg-white border border-slate-200 rounded-2xl pl-14 pr-6 py-4 text-sm font-bold text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 shadow-sm transition-all outline-none" 
           placeholder="Quick find technology (e.g. 'Supabase')..." 
           type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
         />
       </motion.div>
 
       {/* Bento Grid layout for Categories */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-16">
-        {categories.map((cat, i) => (
+        {filteredCategories.map((cat, i) => (
           <motion.div 
-            key={i} 
+            key={cat.title} 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.1 }}
@@ -172,7 +184,7 @@ export default function StackSetupPage() {
             <div className="flex flex-wrap gap-3 mt-4">
               {cat.items.map((item, j) => (
                 <button 
-                  key={j}
+                  key={item.name}
                   onClick={() => toggleItem(i, j)}
                   className={`px-6 py-3 rounded-2xl border font-bold text-sm flex items-center gap-2 transition-all duration-300 btn-premium ${
                     item.active 

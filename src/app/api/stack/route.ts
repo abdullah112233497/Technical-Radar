@@ -1,29 +1,22 @@
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/mongodb';
+import { getStack, saveStack } from '@/lib/mongodb';
 
 export async function GET() {
   try {
-    const db = await getDb();
-    const stack = await db.collection('userStack').findOne({ id: 'current_user' });
-    return NextResponse.json(stack || { items: [] });
+    const items = await getStack();
+    return NextResponse.json({ items });
   } catch (e) {
-    console.error('Stack GET error:', e);
-    return NextResponse.json({ items: [], warning: 'DB connection unavailable' });
+    return NextResponse.json({ items: [] });
   }
 }
 
 export async function POST(request: Request) {
   try {
     const { items } = await request.json();
-    const db = await getDb();
-    await db.collection('userStack').updateOne(
-      { id: 'current_user' },
-      { $set: { items, updatedAt: new Date() } },
-      { upsert: true }
-    );
+    await saveStack(items);
     return NextResponse.json({ message: 'Stack updated successfully' });
   } catch (e) {
     console.error('Stack POST error:', e);
-    return NextResponse.json({ error: 'Failed to update stack. Database connection issue.' }, { status: 503 });
+    return NextResponse.json({ error: 'Failed to update stack' }, { status: 500 });
   }
 }

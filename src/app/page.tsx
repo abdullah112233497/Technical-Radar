@@ -7,6 +7,8 @@ export default function Home() {
   const [intelligence, setIntelligence] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  const [searchTerm, setSearchTerm] = useState('');
+
   useEffect(() => {
     async function fetchIntelligence() {
       try {
@@ -22,10 +24,15 @@ export default function Home() {
     fetchIntelligence();
   }, []);
 
-  const activeData = loading ? [] : (
+  const rawData = loading ? [] : (
     activeTab === 'all' 
       ? [...(intelligence?.risks || []), ...(intelligence?.opportunities || []), ...(intelligence?.info || [])]
       : intelligence?.[activeTab] || []
+  );
+
+  const activeData = rawData.filter((item: any) => 
+    item.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.desc?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const stats = {
@@ -51,7 +58,13 @@ export default function Home() {
         </div>
         <div className="flex items-center gap-3 bg-white border border-slate-200 rounded-2xl px-4 py-2.5 shadow-sm focus-within:ring-2 focus-within:ring-slate-900/5 transition-all">
           <span className="material-symbols-outlined text-slate-400">search</span>
-          <input type="text" placeholder="Search insights..." className="bg-transparent border-none outline-none text-sm w-48 font-medium" />
+          <input 
+            type="text" 
+            placeholder="Search insights..." 
+            className="bg-transparent border-none outline-none text-sm w-48 font-medium" 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
       </motion.div>
 
