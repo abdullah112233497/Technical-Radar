@@ -20,14 +20,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} light`}>
+    <html lang="en" className={`${inter.variable} light`} suppressHydrationWarning>
       <head>
         <link
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
           rel="stylesheet"
         />
       </head>
-      <body className="bg-background text-on-background font-body-lg text-body-lg min-h-screen antialiased flex">
+      <body className="bg-background text-on-background font-body-lg text-body-lg min-h-screen antialiased flex" suppressHydrationWarning>
         <Sidebar />
         <div className="flex-1 ml-64 flex flex-col min-h-screen w-full">
           <TopNav />

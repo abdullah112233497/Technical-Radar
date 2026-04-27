@@ -2,7 +2,7 @@ export default function Home() {
   return (
     <main className="flex-1 p-8 lg:p-12 max-w-[1280px] mx-auto w-full flex flex-col gap-8">
       <div className="flex items-end justify-between mb-4">
-        <h2 className="font-h1 text-h1 text-on-surface">AI CTO Radar</h2>
+        <h2 className="font-h1 text-h1 text-on-surface">Technical Radar</h2>
         <p className="font-body-sm text-body-sm text-outline">Last updated: Just now</p>
       </div>
 
