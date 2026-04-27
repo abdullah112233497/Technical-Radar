@@ -1,207 +1,172 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function IntelligenceHub() {
-  const [activeFilter, setActiveFilter] = useState('all');
+  const [messages, setMessages] = useState<any[]>([
+    { role: 'model', content: 'Hello! I am your Architecture Assistant. I’ve analyzed your current stack. How can I help you optimize your infrastructure today?' }
+  ]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [stack, setStack] = useState<string[]>([]);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  const alerts = [
-    {
-      id: 1,
-      title: "Critical Connection Pool Exhaustion",
-      desc: "Postgres connection limits reached 94% on main-prod-db. Imminent service disruption detected in write operations.",
-      category: "DATABASE",
-      urgency: "CRITICAL",
-      time: "12m ago",
-      icon: "warning",
-      color: "rose",
-      action: "Scale Up"
-    },
-    {
-      id: 2,
-      title: "Unauthorized API Access Patterns",
-      desc: "Anomalous traffic detected from 14.2.19.4 originating in Eastern Europe. 403 response rate up by 400%.",
-      category: "SECURITY",
-      urgency: "HIGH",
-      time: "45m ago",
-      icon: "shield_lock",
-      color: "rose",
-      action: "Block IP"
+  useEffect(() => {
+    async function loadStack() {
+      try {
+        const res = await fetch('/api/stack');
+        const data = await res.json();
+        setStack(data.items || []);
+      } catch (e) {
+        console.error('Failed to load stack', e);
+      }
     }
-  ];
+    loadStack();
+  }, []);
 
-  const opportunities = [
-    {
-      id: 3,
-      title: "Migrate to S3 Intelligent-Tiering",
-      desc: "Analysis of 4TB storage bucket shows 70% of objects haven't been accessed in 30 days. Save ~$85/mo.",
-      category: "COST",
-      urgency: "MEDIUM",
-      time: "1d ago",
-      icon: "savings",
-      color: "emerald",
-      action: "Optimize"
-    },
-    {
-      id: 4,
-      title: "Enable Cloudflare Early Hints",
-      desc: "Server timing data suggests Early Hints could reduce Largest Contentful Paint (LCP) by up to 300ms.",
-      category: "PERFORMANCE",
-      urgency: "LOW",
-      time: "2d ago",
-      icon: "speed",
-      color: "emerald",
-      action: "Activate"
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  ];
+  }, [messages]);
 
-  const info = [
-    {
-      id: 5,
-      title: "Node.js 22 LTS Released",
-      desc: "Official LTS support for v22 is now active. Includes significant V8 engine performance boosts.",
-      category: "ECOSYSTEM",
-      urgency: "INFO",
-      time: "3d ago",
-      icon: "info",
-      color: "blue",
-      action: "Docs"
-    },
-    {
-      id: 6,
-      title: "Next.js Security Middleware",
-      desc: "New middleware pattern released for improved CSRF protection. Integration recommended for all routes.",
-      category: "UPDATES",
-      urgency: "INFO",
-      time: "4d ago",
-      icon: "update",
-      color: "blue",
-      action: "Review"
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
+
+    const userMessage = { role: 'user', content: input };
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
+    setIsLoading(true);
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: [...messages, userMessage] })
+      });
+      const data = await res.json();
+      if (data.content) {
+        setMessages(prev => [...prev, { role: 'model', content: data.content }]);
+      }
+    } catch (e) {
+      console.error('Chat failed', e);
+    } finally {
+      setIsLoading(false);
     }
-  ];
-
-  const sections = [
-    { id: 'alerts', title: 'Critical Alerts', data: alerts, color: 'text-rose-500', bg: 'bg-rose-500/10' },
-    { id: 'opportunities', title: 'Strategic Opportunities', data: opportunities, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-    { id: 'info', title: 'System Updates & Info', data: info, color: 'text-blue-500', bg: 'bg-blue-500/10' }
-  ];
+  };
 
   return (
-    <main className="flex-1 p-8 lg:p-12 max-w-[1600px] mx-auto w-full flex flex-col gap-12 fade-up">
-      {/* Header with Stats Overlay */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8">
-        <div className="space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.2em]">
-            <span className="material-symbols-outlined text-[14px]">psychology</span>
-            Intelligence Hub
-          </div>
-          <h1 className="text-5xl font-black tracking-tight text-slate-900">Architecture Insights</h1>
-          <p className="text-lg text-slate-500 font-medium max-w-2xl leading-relaxed">
-            Autonomous monitoring of your entire technical stack. Active intelligence detecting risks before they become incidents.
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-4 bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">
-          <div className="px-6 py-3 border-r border-slate-100 text-center">
-            <div className="text-2xl font-black text-rose-500">02</div>
-            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Risks</div>
-          </div>
-          <div className="px-6 py-3 border-r border-slate-100 text-center">
-            <div className="text-2xl font-black text-emerald-500">05</div>
-            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Growth Paths</div>
-          </div>
-          <div className="px-6 py-3 text-center">
-            <div className="text-2xl font-black text-blue-500">12</div>
-            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Updates</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Global Filter & Search Bar */}
-      <div className="flex flex-col md:flex-row gap-4 items-center">
-        <div className="flex-1 relative w-full group">
-          <span className="material-symbols-outlined absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-900 transition-colors">filter_list</span>
-          <input 
-            type="text" 
-            placeholder="Search intelligence feed..." 
-            className="w-full bg-white border border-slate-200 rounded-[1.5rem] pl-14 pr-6 py-4 text-sm font-bold text-slate-900 focus:ring-4 focus:ring-slate-900/5 focus:border-slate-900 outline-none transition-all shadow-sm"
-          />
-        </div>
-        <div className="flex bg-white p-1.5 rounded-[1.5rem] border border-slate-200 shadow-sm w-full md:w-auto">
-          {['all', 'risks', 'opportunities', 'info'].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveFilter(tab)}
-              className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-xs font-black transition-all uppercase tracking-widest ${activeFilter === tab ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-900 hover:bg-slate-50'}`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Intelligence Sections Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
-        {sections.map((section) => (
-          <div key={section.id} className="space-y-8">
-            <div className="flex items-center gap-4 px-2">
-              <div className={`w-3 h-3 rounded-full ${section.color.replace('text', 'bg')}`}></div>
-              <h4 className={`text-xl font-black tracking-tight ${section.color}`}>{section.title}</h4>
-              <div className="flex-1 h-[1px] bg-slate-100"></div>
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{section.data.length} ACTIVE</span>
-            </div>
-
-            <div className="space-y-6">
-              {section.data.map((item) => (
-                <div 
-                  key={item.id} 
-                  className="bg-white border border-slate-200/60 rounded-[2.5rem] p-8 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 relative group overflow-hidden"
-                >
-                  {/* Subtle hover background gradient */}
-                  <div className={`absolute top-0 right-0 w-32 h-32 ${section.bg} rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
-                  
-                  <div className="flex items-start justify-between mb-6 relative z-10">
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${section.bg} ${section.color} shadow-sm group-hover:scale-110 transition-transform duration-500`}>
-                      <span className="material-symbols-outlined text-[24px]">{item.icon}</span>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{item.time}</div>
-                      <div className={`text-[9px] font-black px-2 py-0.5 rounded mt-1 inline-block tracking-widest ${
-                        item.urgency === 'CRITICAL' ? 'bg-rose-500 text-white animate-pulse' :
-                        item.urgency === 'HIGH' ? 'bg-rose-100 text-rose-600' :
-                        item.urgency === 'MEDIUM' ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'
-                      }`}>
-                        {item.urgency}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="relative z-10 mb-8">
-                    <h5 className="text-xl font-black text-slate-900 mb-3 leading-tight group-hover:text-slate-700 transition-colors">
-                      {item.title}
-                    </h5>
-                    <p className="text-sm text-slate-500 font-medium leading-relaxed">
-                      {item.desc}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-6 border-t border-slate-50 relative z-10">
-                    <div className="flex flex-col">
-                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Asset Category</span>
-                      <span className="text-xs font-black text-slate-900 tracking-tight">{item.category}</span>
-                    </div>
-                    <button className={`px-6 py-3 rounded-xl text-xs font-black transition-all duration-300 shadow-lg ${
-                      section.id === 'alerts' ? 'bg-rose-500 text-white shadow-rose-500/20 hover:bg-rose-600' :
-                      section.id === 'opportunities' ? 'bg-emerald-500 text-white shadow-emerald-500/20 hover:bg-emerald-600' :
-                      'bg-slate-900 text-white shadow-slate-900/20 hover:bg-slate-800'
-                    }`}>
-                      {item.action}
-                    </button>
-                  </div>
-                </div>
+    <main className="flex-1 flex flex-col h-[calc(100vh-64px)] overflow-hidden bg-slate-50">
+      <div className="flex-1 flex overflow-hidden">
+        {/* Sidebar - Stack Info */}
+        <div className="w-80 border-r border-slate-200 bg-white p-6 hidden lg:flex flex-col gap-8">
+          <div>
+            <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4">Current Stack</h3>
+            <div className="flex flex-wrap gap-2">
+              {stack.map((item, i) => (
+                <span key={i} className="px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-bold shadow-sm">
+                  {item}
+                </span>
               ))}
+              {stack.length === 0 && <p className="text-xs text-slate-400 italic">No stack selected</p>}
             </div>
           </div>
-        ))}
+          
+          <div className="flex-1">
+            <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4">AI Focus Areas</h3>
+            <ul className="space-y-4">
+              {[
+                { icon: 'security', label: 'Vulnerability Scanning', color: 'text-rose-500' },
+                { icon: 'bolt', label: 'Performance Optimization', color: 'text-emerald-500' },
+                { icon: 'monitoring', label: 'Ecosystem Health', color: 'text-blue-500' },
+                { icon: 'account_tree', label: 'Scalability Planning', color: 'text-purple-500' }
+              ].map((item, i) => (
+                <li key={i} className="flex items-center gap-3 text-sm font-bold text-slate-600">
+                  <span className={`material-symbols-outlined ${item.color}`}>{item.icon}</span>
+                  {item.label}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Powering Analysis</p>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+              <span className="text-xs font-bold text-slate-700">Gemini 1.5 Flash Active</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Chat Area */}
+        <div className="flex-1 flex flex-col bg-white lg:bg-transparent relative">
+          {/* Chat Messages */}
+          <div 
+            ref={scrollRef}
+            className="flex-1 overflow-y-auto p-6 lg:p-12 space-y-8"
+          >
+            <AnimatePresence initial={false}>
+              {messages.map((msg, i) => (
+                <motion.div 
+                  key={i}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div className={`max-w-[80%] p-6 rounded-[2rem] shadow-sm ${
+                    msg.role === 'user' 
+                      ? 'bg-slate-900 text-white rounded-tr-none' 
+                      : 'bg-white border border-slate-200 text-slate-800 rounded-tl-none'
+                  }`}>
+                    <p className="text-sm leading-relaxed font-medium whitespace-pre-wrap">{msg.content}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="bg-white border border-slate-200 p-6 rounded-[2rem] rounded-tl-none shadow-sm flex gap-2">
+                  <div className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce"></div>
+                  <div className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                  <div className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce [animation-delay:0.4s]"></div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Input Area */}
+          <div className="p-6 lg:p-12 bg-gradient-to-t from-slate-50 to-transparent">
+            <div className="max-w-4xl mx-auto relative group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-slate-900 to-slate-700 rounded-[2.5rem] blur opacity-5 group-focus-within:opacity-10 transition duration-500"></div>
+              <div className="relative flex items-center bg-white border border-slate-200 rounded-[2.5rem] shadow-xl overflow-hidden px-2 py-2">
+                <input 
+                  type="text" 
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                  placeholder="Ask about architectural patterns, security risks, or library updates..."
+                  className="flex-1 bg-transparent border-none outline-none px-6 py-3 text-sm font-medium text-slate-800"
+                />
+                <button 
+                  onClick={handleSend}
+                  disabled={isLoading || !input.trim()}
+                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
+                    isLoading || !input.trim() 
+                      ? 'bg-slate-100 text-slate-400' 
+                      : 'bg-slate-900 text-white hover:scale-105 active:scale-95 shadow-lg shadow-slate-900/20'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[20px]">
+                    {isLoading ? 'hourglass_empty' : 'arrow_upward'}
+                  </span>
+                </button>
+              </div>
+              <p className="mt-3 text-[10px] text-center text-slate-400 font-bold uppercase tracking-widest">
+                AI can provide insights based on your selected stack and real-time ecosystem updates
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
   );
