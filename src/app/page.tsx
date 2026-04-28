@@ -56,16 +56,6 @@ export default function Home() {
             System Health Analysis • {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
           </p>
         </div>
-        <div className="flex items-center gap-3 bg-white border border-slate-200 rounded-2xl px-4 py-2.5 shadow-sm focus-within:ring-2 focus-within:ring-slate-900/5 transition-all">
-          <span className="material-symbols-outlined text-slate-400">search</span>
-          <input 
-            type="text" 
-            placeholder="Search insights..." 
-            className="bg-transparent border-none outline-none text-sm w-48 font-medium" 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
       </motion.div>
 
       {/* Hero Panel: AI Recommendation */}
