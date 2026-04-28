@@ -1,16 +1,13 @@
 import { NextResponse } from 'next/server';
 import { getStack } from '@/lib/mongodb';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import Groq from 'groq-sdk';
 
 const genAI = new GoogleGenerativeAI(process.env.Gemini_API_Key?.trim() || '');
-// Use gemini-flash-latest which acts as gemini-1.5-flash for this API Key, fallback to 2.0
-const MODELS = ['gemini-flash-latest', 'gemini-2.0-flash', 'gemini-pro-latest'];
+const groq = new Groq({ apiKey: process.env.Groq_API_Key?.trim() || '' });
 
-// In-memory cache variables
-let intelligenceCache: any = null;
-let cacheTimestamp: number = 0;
-let cacheStackString: string = '';
-const CACHE_TTL = 15 * 60 * 1000; // 15 minutes
+// Prioritizing models discovered to be supported by the user's key
+const MODELS = ['gemini-flash-latest', 'gemini-pro-latest', 'gemini-2.0-flash'];
 
 const STATIC_FALLBACK = {
   risks: [
@@ -59,12 +56,7 @@ export async function GET() {
     const stackItems = await getStack();
     const currentStackString = stackItems.join(',');
 
-    // 1. Check in-memory cache
-    if (intelligenceCache && (Date.now() - cacheTimestamp < CACHE_TTL) && cacheStackString === currentStackString) {
-      return NextResponse.json({ ...intelligenceCache, lastUpdated: new Date(cacheTimestamp).toISOString() });
-    }
-
-    // 2. Fetch external APIs in parallel to reduce latency
+    // 1. Fetch external APIs in parallel to reduce latency
     const [hnData, githubData] = await Promise.all([
       fetchHN(),
       fetchGitHub(stackItems)
@@ -74,14 +66,10 @@ export async function GET() {
 
     const prompt = `
       You are an AI Architecture Consultant. Provide real-time architecture insights specifically tailored for this tech stack: ${stackContext}.
+      HackerNews: ${hnData || 'No recent news.'}
+      GitHub: ${githubData || 'No recent updates.'}
       
-      Recent ecosystem context (max 5 items each):
-      HackerNews:
-      ${hnData || 'No recent news.'}
-      GitHub:
-      ${githubData || 'No recent updates.'}
-      
-      IMPORTANT: Return ONLY a valid JSON object. Do not include markdown formatting.
+      IMPORTANT: Return ONLY a valid JSON object.
       {
         "risks": [{"title": "...", "desc": "...", "time": "Just now", "url": "", "icon": "warning", "color": "rose", "category": "risks"}],
         "opportunities": [{"title": "...", "desc": "...", "time": "Just now", "url": "", "icon": "trending_up", "color": "emerald", "category": "opportunities"}],
@@ -89,7 +77,7 @@ export async function GET() {
       }
     `;
 
-    // 3. Robust model-switching logic
+    // 2. Attempt Gemini Models
     for (let i = 0; i < MODELS.length; i++) {
       try {
         const model = genAI.getGenerativeModel({ model: MODELS[i] });
@@ -97,29 +85,26 @@ export async function GET() {
         const response = await result.response;
         const text = response.text();
         const jsonStr = text.replace(/```json|```/g, '').trim();
-        const parsedData = JSON.parse(jsonStr);
-
-        // Update cache
-        intelligenceCache = parsedData;
-        cacheTimestamp = Date.now();
-        cacheStackString = currentStackString;
-
-        return NextResponse.json({ ...parsedData, lastUpdated: new Date(cacheTimestamp).toISOString() });
-      } catch (err) {
-        if (i === MODELS.length - 1) throw err;
-      }
+        return NextResponse.json({ ...JSON.parse(jsonStr), lastUpdated: new Date().toISOString() });
+      } catch (err) {}
     }
 
+    // 3. Fallback to Groq for analysis
+    try {
+      const chatCompletion = await groq.chat.completions.create({
+        messages: [{ role: 'user', content: prompt }],
+        model: 'llama-3.3-70b-versatile',
+        response_format: { type: 'json_object' }
+      });
+      const content = chatCompletion.choices[0]?.message?.content || '';
+      return NextResponse.json({ ...JSON.parse(content), lastUpdated: new Date().toISOString(), isGroq: true });
+    } catch (groqErr) {}
+
+    // 4. Final Fallback to static data
+    return NextResponse.json({ ...STATIC_FALLBACK, lastUpdated: new Date().toISOString(), isStale: true });
+
   } catch (e) {
-    console.warn('Intelligence analysis error, falling back to static cache:', e.message);
-    
-    // 4. If Gemini fails, return last cached data or a rich static fallback to keep the app working
-    const fallbackData = intelligenceCache ? intelligenceCache : STATIC_FALLBACK;
-    
-    return NextResponse.json({
-      ...fallbackData,
-      lastUpdated: new Date().toISOString(),
-      isStale: true
-    });
+    return NextResponse.json({ ...STATIC_FALLBACK, lastUpdated: new Date().toISOString(), isStale: true });
   }
 }
+
