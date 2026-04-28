@@ -72,7 +72,7 @@ async function connectToMongo() {
     console.log('>>> CONNECTED TO MONGODB ATLAS <<<');
     return client;
   } catch (err) {
-    console.error('>>> ATLAS CONNECTION FAILED:', err.message);
+    console.error('>>> ATLAS CONNECTION FAILED:', (err as any).message);
     try {
       const localClient = new MongoClient('mongodb://localhost:27017/technicalRadar', { connectTimeoutMS: 5000 });
       await localClient.connect();
@@ -128,7 +128,7 @@ export async function saveStack(items: string[]) {
     );
     console.log('>>> STACK SAVED TO DB SUCCESSFULLY <<<');
   } catch (e) {
-    console.error('>>> FAILED TO SAVE TO DB:', e.message);
+    console.error('>>> FAILED TO SAVE TO DB:', (e as any).message);
     const dbData = getLocalDb();
     dbData.userStack.items = items;
     fs.writeFileSync(DB_PATH, JSON.stringify(dbData, null, 2));
