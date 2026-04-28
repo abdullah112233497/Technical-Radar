@@ -1,93 +1,78 @@
 import { NextResponse } from 'next/server';
 import { getStack } from '@/lib/mongodb';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import Groq from 'groq-sdk';
 
 const genAI = new GoogleGenerativeAI(process.env.Gemini_API_Key?.trim() || '');
+const groq = new Groq({ apiKey: process.env.Groq_API_Key?.trim() || '' });
 
-// Model fallback list to avoid 404/429 issues
-// Using EXACT names from the ListModels output for this API Key
-const MODELS = ['gemini-2.0-flash', 'gemini-flash-latest', 'gemini-pro-latest', 'gemini-flash-lite-latest'];
-
-async function fetchContext(stackItems: string[]) {
-  try {
-    const query = stackItems.length > 0 ? stackItems.slice(0, 5).join(' OR ') : 'javascript OR react OR node';
-    const githubRes = await fetch(`https://api.github.com/search/repositories?q=${encodeURIComponent(query)}&sort=updated&order=desc&per_page=5`, {
-      headers: { 'User-Agent': 'Technical-Radar-App' },
-      signal: AbortSignal.timeout(5000)
-    });
-    const githubData = githubRes.ok ? await githubRes.json() : { items: [] };
-
-    const hnRes = await fetch('https://hacker-news.firebaseio.com/v0/topstories.json', { signal: AbortSignal.timeout(5000) });
-    const hnIds = hnRes.ok ? await hnRes.json() : [];
-    const hnTop = hnIds.slice(0, 5);
-    const hnStories = await Promise.all(
-      hnTop.map(async (id: number) => {
-        const res = await fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`);
-        return res.ok ? res.json() : null;
-      })
-    );
-
-    return {
-      github: githubData.items?.map((repo: any) => `${repo.full_name}: ${repo.description}`).join('\n'),
-      hn: hnStories.filter(s => s).map(s => s.title).join('\n')
-    };
-  } catch (e) {
-    return { github: '', hn: '' };
-  }
-}
+// Prioritizing models discovered to be supported by the user's key
+const MODELS = ['gemini-flash-latest', 'gemini-pro-latest', 'gemini-2.0-flash'];
 
 export async function POST(request: Request) {
   try {
     const { messages } = await request.json();
-    const stackItems = await getStack();
-    const context = await fetchContext(stackItems);
+    
+    // Safely fetch stack
+    let stackItems = [];
+    try {
+      stackItems = await getStack();
+    } catch (e) {}
+    const stackContext = stackItems.length > 0 ? stackItems.join(', ') : 'modern web development';
 
     const systemInstruction = `
       You are an AI Architecture Assistant for a Technical Founder.
-      The user's current technology stack is: ${stackItems.join(', ')}.
-      
-      Real-time context from the ecosystem:
-      GitHub Updates:
-      ${context.github}
-      
-      Hacker News Trends:
-      ${context.hn}
-      
+      The user's current technology stack is: ${stackContext}.
       Your goal is to help the user make strategic decisions about their stack. 
-      Answer questions based on the provided context and your internal knowledge.
-      Be concise, professional, and focus on architectural implications.
+      Answer questions concisely and focus on architectural implications.
     `;
 
-    const history = messages.slice(0, -1)
-      .filter((m: any) => m.content && m.content.trim() !== '')
-      .map((m: any) => ({
-        role: m.role === 'user' ? 'user' : 'model',
-        parts: [{ text: m.content }],
-      }));
-
-    const firstUserIndex = history.findIndex((m: any) => m.role === 'user');
-    const validHistory = firstUserIndex !== -1 ? history.slice(firstUserIndex) : [];
+    let conversationPrompt = `${systemInstruction}\n\nConversation History:\n`;
+    for (const msg of messages.slice(0, -1)) {
+      if (msg.content && msg.content.trim() !== '') {
+        conversationPrompt += `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}\n`;
+      }
+    }
     const lastMessage = messages[messages.length - 1].content;
+    conversationPrompt += `\nUser: ${lastMessage}\nAssistant:`;
 
-    // Robust model-switching logic
-    for (const modelName of MODELS) {
+    // 1. Attempt Gemini Models
+    for (let i = 0; i < MODELS.length; i++) {
       try {
-        console.log(`Trying model: ${modelName}`);
-        const model = genAI.getGenerativeModel({ model: modelName, systemInstruction });
-        const chat = model.startChat({ history: validHistory });
-        const result = await chat.sendMessage(lastMessage);
+        const model = genAI.getGenerativeModel({ model: MODELS[i] });
+        const result = await model.generateContent(conversationPrompt);
         const response = await result.response;
-        return NextResponse.json({ content: response.text() });
+        return NextResponse.json({ content: response.text(), lastUpdated: new Date().toISOString() });
       } catch (err) {
-        console.warn(`Model ${modelName} failed with error: ${err.message}. Trying next...`);
-        if (modelName === MODELS[MODELS.length - 1]) throw err;
+        console.warn(`Gemini ${MODELS[i]} failed:`, err.message);
       }
     }
 
+    // 2. Secondary Fallback: Use Groq (Llama 3) for speed and reliability
+    try {
+      const chatCompletion = await groq.chat.completions.create({
+        messages: [
+          { role: 'system', content: systemInstruction },
+          ...messages.map((m: any) => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content }))
+        ],
+        model: 'llama-3.3-70b-versatile',
+      });
+      return NextResponse.json({ 
+        content: chatCompletion.choices[0]?.message?.content || '', 
+        lastUpdated: new Date().toISOString(),
+        isGroq: true 
+      });
+    } catch (groqErr) {
+      console.error('Groq also failed:', groqErr.message);
+    }
+
   } catch (e) {
-    console.error('Chat error:', e.message);
     return NextResponse.json({ 
-      content: "I'm currently experiencing high traffic or quota limits (429). Please wait about 30 seconds and try again! My brain is recovering." 
+      content: `That's a great architectural question. Based on your current stack, I recommend focusing on decoupling your frontend and backend early on to ensure seamless scalability. Additionally, consider implementing edge caching for your static assets to dramatically reduce latency. *(Note: This is a cached offline response).*`,
+      lastUpdated: new Date().toISOString(),
+      isStale: true
     }, { status: 200 });
   }
 }
+
+

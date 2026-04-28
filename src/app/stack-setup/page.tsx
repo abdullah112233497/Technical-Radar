@@ -222,7 +222,22 @@ export default function StackSetupPage() {
           
           <div className="flex items-center gap-4 w-full md:w-auto">
             <button 
-              onClick={() => setCategories(categories.map(c => ({...c, items: c.items.map(it => ({...it, active: false}))})))}
+              disabled={isSaving}
+              onClick={async () => {
+                setIsSaving(true);
+                setCategories(categories.map(c => ({...c, items: c.items.map(it => ({...it, active: false}))})));
+                try {
+                  await fetch('/api/stack', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ items: [] })
+                  });
+                } catch (e) {
+                  console.error('Failed to clear stack in db', e);
+                } finally {
+                  setIsSaving(false);
+                }
+              }}
               className="flex-1 md:flex-none text-slate-400 text-sm font-bold hover:text-slate-900 transition-colors px-6 py-4"
             >
               Clear All
