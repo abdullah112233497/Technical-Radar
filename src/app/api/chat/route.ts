@@ -44,7 +44,7 @@ export async function POST(request: Request) {
         const response = await result.response;
         return NextResponse.json({ content: response.text(), lastUpdated: new Date().toISOString() });
       } catch (err) {
-        console.warn(`Gemini ${MODELS[i]} failed:`, err.message);
+        console.warn(`Gemini ${MODELS[i]} failed:`, (err as any).message);
       }
     }
 
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
         isGroq: true 
       });
     } catch (groqErr) {
-      console.error('Groq also failed:', groqErr.message);
+      console.error('Groq also failed:', (groqErr as any).message);
     }
 
   } catch (e) {
